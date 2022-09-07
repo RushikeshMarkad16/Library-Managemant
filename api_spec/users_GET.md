@@ -2,13 +2,13 @@
 Description : This API will display user's information
 
 ### HTTP Request
-`GET/users`
+`GET/user/{user_id}`
 
 ### URL Parameters
-/users
+/users/{user_id}
 
 ### Query Parameters
-N/A
+user_id
 
 
 ### Request Headers
@@ -17,6 +17,9 @@ Content-Type: application/x-www-form-urlencoded
 ```
 
 ### Request Body
+| Parameter | Format | Description                                |
+|-----------|--------|--------------------------------------------|
+| Email     | String | Email Id of user |
 
 
 
