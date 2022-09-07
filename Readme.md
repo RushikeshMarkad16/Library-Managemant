@@ -1,6 +1,6 @@
-### Library management system
+## Library management system
 
-# Requirements
+### Requirements
 There are three roles superadmin, admin, and endusers.
 Superadmin has all the privileges. 
 Admin can enrol endusers and manage the book activities with endusers.
