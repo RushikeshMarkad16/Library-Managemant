@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/RushikeshMarkad16/Library-Managemant/development/config"
+	"github.com/RushikeshMarkad16/Library-Managemant/config"
 	"github.com/urfave/negroni"
 )
 

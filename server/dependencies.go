@@ -1,6 +1,6 @@
 package server
 
-import _ "github.com/RushikeshMarkad16/Library-Managemant/development/app"
+import _ "github.com/RushikeshMarkad16/Library-Managemant/app"
 
 type dependencies struct {
 	//UserService user.Service

@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	_ "github.com/RushikeshMarkad16/Library-Managemant/development/config"
+	_ "github.com/RushikeshMarkad16/Library-Managemant/config"
 	"github.com/gorilla/mux"
 )
 
