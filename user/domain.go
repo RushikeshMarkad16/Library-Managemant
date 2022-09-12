@@ -3,12 +3,12 @@ package user
 import "github.com/RushikeshMarkad16/Library-Managemant/db"
 
 type updateRequest struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID         string `json:"id"`
+	First_Name string `json:"name"`
 }
 
 type createRequest struct {
-	Name string `json:"name"`
+	First_Name string `json:"first_name"`
 }
 
 type findByIDResponse struct {
@@ -20,7 +20,7 @@ type listResponse struct {
 }
 
 func (cr createRequest) Validate() (err error) {
-	if cr.Name == "" {
+	if cr.First_Name == "" {
 		return errEmptyName
 	}
 	return
@@ -30,7 +30,7 @@ func (ur updateRequest) Validate() (err error) {
 	if ur.ID == "" {
 		return errEmptyID
 	}
-	if ur.Name == "" {
+	if ur.First_Name == "" {
 		return errEmptyName
 	}
 	return
