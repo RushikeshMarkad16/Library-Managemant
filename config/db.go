@@ -27,8 +27,6 @@ func (c databaseConfig) Driver() string {
 }
 
 func (c databaseConfig) ConnectionURL() string {
-	//return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", c.user, c.password, c.host, c.port, c.name)
-	//sql.Register("mysql", &MySQLDriver{})
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", c.user, c.password, c.host, c.port, c.name)
 }
 
