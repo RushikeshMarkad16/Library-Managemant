@@ -10,7 +10,7 @@ type UserServiceMock struct {
 	mock.Mock
 }
 
-func (m *UserServiceMock) create(ctx context.Context, c createRequest) (err error) {
+func (m *UserServiceMock) create(ctx context.Context, c User) (err error) {
 	args := m.Called(ctx, c)
 	return args.Error(0)
 }
@@ -21,7 +21,7 @@ func (m *UserServiceMock) list(ctx context.Context) (response listResponse, err 
 	return response, args.Error(1)
 }
 
-func (m *UserServiceMock) update(ctx context.Context, c updateRequest) (err error) {
+func (m *UserServiceMock) update(ctx context.Context, c User) (err error) {
 	args := m.Called(ctx, c)
 	return args.Error(0)
 }
