@@ -18,7 +18,7 @@ const (
 )
 
 type User struct {
-	ID         int    `db:"id"`
+	ID         string `db:"id"`
 	First_name string `db:"first_name"`
 	Last_name  string `db:"last_name"`
 	Gender     string `db:"gender"`
@@ -30,15 +30,72 @@ type User struct {
 	Role       string `db:"role"`
 }
 
-func (s *store) CreateCategory(ctx context.Context, user *User) (err error) {
-	now := time.Now()
+func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
+	//now := time.Now()
 
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		_, err = s.db.Exec(
 			createUserQuery,
+			user.ID,
+			user.First_name,
+			user.Last_name,
+			user.Gender,
+			user.DOB,
+			user.Address,
+			user.Email,
+			user.Password,
+			user.Mob_no,
+			user.Role,
+			// now,
+			// now,
+		)
+		return err
+	})
+}
+
+func (s *store) ListUsers(ctx context.Context) (users []User, err error) {
+	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
+		return s.db.SelectContext(ctx, &users, listUsersQuery)
+	})
+	if err == sql.ErrNoRows {
+		return users, ErrUserNotExist
+	}
+	return
+}
+
+func (s *store) FindUserByID(ctx context.Context, id string) (user User, err error) {
+	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
+		return s.db.GetContext(ctx, &user, findUserByIDQuery, id)
+	})
+	if err == sql.ErrNoRows {
+		return user, ErrUserNotExist
+	}
+	return
+}
+
+func (s *store) DeleteUserByID(ctx context.Context, id string) (err error) {
+	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
+		res, err := s.db.Exec(deleteUserByIDQuery, id)
+		cnt, err := res.RowsAffected()
+		if cnt == 0 {
+			return ErrUserNotExist
+		}
+		if err != nil {
+			return err
+		}
+		return err
+	})
+}
+
+func (s *store) UpdateUser(ctx context.Context, user *User) (err error) {
+	now := time.Now()
+
+	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
+		_, err = s.db.Exec(
+			updateUserQuery,
 			user.First_name,
 			now,
-			now,
+			user.ID,
 		)
 		return err
 	})
