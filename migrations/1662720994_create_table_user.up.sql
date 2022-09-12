@@ -1,6 +1,6 @@
 CREATE TABLE user
 (
-  id INT NOT NULL,
+  id VARCHAR(64) NOT NULL,
   first_name VARCHAR(20) NOT NULL,
   last_name VARCHAR(20) NOT NULL,
   gender VARCHAR(10) NOT NULL,
