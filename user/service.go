@@ -90,6 +90,11 @@ func (cs *userService) update(ctx context.Context, c User) (err error) {
 	err = cs.store.UpdateUser(ctx, &db.User{
 		ID:         c.ID,
 		First_name: c.FirstName,
+		Last_name:  c.Last_name,
+		Gender:     c.Gender,
+		Address:    c.Address,
+		Password:   c.Password,
+		Mob_no:     c.Mob_no,
 	})
 	if err != nil {
 		cs.logger.Error("Error updating user", "err", err.Error(), "user", c)
