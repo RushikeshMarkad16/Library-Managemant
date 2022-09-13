@@ -14,7 +14,8 @@ const (
 	listUsersQuery      = `SELECT * FROM user`
 	findUserByIDQuery   = `SELECT * FROM user WHERE id = ?`
 	deleteUserByIDQuery = `DELETE FROM user WHERE id = ?`
-	updateUserQuery     = `UPDATE user SET name = $1, updated_at = $2 where id = $3`
+	updateUserQuery     = `UPDATE user SET first_name=?, last_name=?, gender=?, address=?, email=?, password=?, mob_no=? `
+	//updated_at = $2 where id = $3
 )
 
 type User struct {
