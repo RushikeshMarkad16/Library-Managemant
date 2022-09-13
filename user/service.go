@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/RushikeshMarkad16/Library-Managemant/db"
+	"github.com/google/uuid"
 
 	"go.uber.org/zap"
 )
@@ -56,6 +57,9 @@ func (cs *userService) create(ctx context.Context, c User) (err error) {
 		cs.logger.Errorw("Invalid request for user create", "msg", err.Error(), "user", c)
 		return
 	}
+
+	uuidgen := uuid.New()
+	c.ID = uuidgen.String()
 
 	err = cs.store.CreateUser(ctx, &db.User{
 		ID:         c.ID,
