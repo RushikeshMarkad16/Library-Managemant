@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"time"
 )
 
 const (
@@ -14,7 +13,7 @@ const (
 	listBooksQuery      = `SELECT * FROM book`
 	findBookByIDQuery   = `SELECT * FROM book WHERE id = ?`
 	deleteBookByIDQuery = `DELETE FROM book WHERE id = ?`
-	updateBookQuery     = `UPDATE book SET name=?, author=?, price=?, total_copies=?, status=?, available_copies=? `
+	updateBookQuery     = `UPDATE book SET name=?, author=?, price=?, total_copies=?, status=?, available_copies=? WHERE id=? `
 )
 
 type Book struct {
@@ -79,13 +78,17 @@ func (s *store) DeleteBookByID(ctx context.Context, id string) (err error) {
 }
 
 func (s *store) UpdateBook(ctx context.Context, book *Book) (err error) {
-	now := time.Now()
+	//now := time.Now()
 
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		_, err = s.db.Exec(
 			updateBookQuery,
 			book.Name,
-			now,
+			book.Author,
+			book.Price,
+			book.TotalCopies,
+			book.Status,
+			book.AvailableCopies,
 			book.ID,
 		)
 		return err
