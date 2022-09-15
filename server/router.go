@@ -5,7 +5,9 @@ import (
 
 	"github.com/RushikeshMarkad16/Library-Managemant/api"
 	"github.com/RushikeshMarkad16/Library-Managemant/book"
+	"github.com/RushikeshMarkad16/Library-Managemant/transaction"
 	"github.com/RushikeshMarkad16/Library-Managemant/user"
+
 	"github.com/gorilla/mux"
 )
 
@@ -27,6 +29,12 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	router.HandleFunc("/books/{id}", book.FindByID(dep.BookService)).Methods(http.MethodGet)
 	router.HandleFunc("/books/{id}", book.DeleteByID(dep.BookService)).Methods(http.MethodDelete)
 	router.HandleFunc("/books", book.Update(dep.BookService)).Methods(http.MethodPut)
+
+	//Transaction
+
+	router.HandleFunc("/book/issue", transaction.Create(dep.TransactionService)).Methods(http.MethodPost)
+	router.HandleFunc("/book/return", transaction.Update(dep.TransactionService)).Methods(http.MethodPut)
+	router.HandleFunc("/userbook/transaction", transaction.List(dep.TransactionService)).Methods(http.MethodGet)
 
 	return
 }
