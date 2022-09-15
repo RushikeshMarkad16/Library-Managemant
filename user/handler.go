@@ -109,5 +109,5 @@ func Update(service Service) http.HandlerFunc {
 }
 
 func isBadRequest(err error) bool {
-	return err == errEmptyName || err == errEmptyID
+	return err == errEmptyFirstName || err == errEmptyID
 }
