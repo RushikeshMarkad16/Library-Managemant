@@ -3,10 +3,56 @@ package user
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/RushikeshMarkad16/Library-Managemant/api"
+	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
 )
+
+type JWTClaim struct {
+	UserID string `json:user_id`
+	Email  string `json:email`
+	Role   string `json:role`
+	jwt.StandardClaims
+}
+
+var jwtKey = []byte("bd46*@^g")
+
+func Login() http.HandlerFunc {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		var j JWTClaim
+		err := json.NewDecoder(req.Body).Decode(&j)
+		if err != nil {
+			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
+			return
+		}
+		jwtString, err := GenerateJWT(j.UserID, j.Email, j.Role)
+		if err != nil {
+			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
+			return
+		}
+
+		api.Success(rw, http.StatusCreated, jwtString)
+
+	})
+}
+
+func GenerateJWT(UserID string, Email string, Role string) (tokenString string, err error) {
+
+	expirationTime := time.Now().Add(1 * time.Hour)
+	claims := &JWTClaim{
+		Email:  Email,
+		UserID: UserID,
+		Role:   Role,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err = token.SignedString(jwtKey)
+	return
+}
 
 func Create(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
