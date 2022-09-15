@@ -23,5 +23,20 @@ func (cr Book) Validate() (err error) {
 	if cr.Name == "" {
 		return errEmptyName
 	}
+	if cr.Author == "" {
+		return errEmptyAuthor
+	}
+	if cr.TotalCopies == 0 {
+		return errZeroCopies
+	}
+	if cr.Price < 1 {
+		return errInvalidPrice
+	}
+	if cr.Status != "available" {
+		return errInvalidStatus
+	}
+	if cr.AvailableCopies > cr.TotalCopies {
+		return errInvalidAvailableCopies
+	}
 	return
 }
