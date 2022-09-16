@@ -14,8 +14,6 @@ import (
 	"github.com/golang-jwt/jwt"
 
 	"github.com/gorilla/mux"
-	// "github.com/go-gorm/gorm"
-	// "github.com/golang-jwt/jwt"
 )
 
 type Authentication struct {
@@ -29,9 +27,7 @@ type Token struct {
 	TokenString string `json:"token"`
 }
 
-const (
-	secretkey = "jsd549$^&"
-)
+var secretkey = []byte("jsd549$^&")
 
 func GenerateJWT(email, role, id string) (string, error) {
 	var mySigningKey = []byte(secretkey)
