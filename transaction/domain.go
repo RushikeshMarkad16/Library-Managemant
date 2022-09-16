@@ -21,9 +21,6 @@ func (cr Transaction) Validate() (err error) {
 	if cr.UserID == "" {
 		return errEmptyUserID
 	}
-	if cr.ReturnDate < cr.IssueDate {
-		return errInvalidReturnDate
-	}
 
 	return
 }
