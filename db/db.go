@@ -21,6 +21,7 @@ type Storer interface {
 	CreateUser(ctx context.Context, user *User) (err error)
 	ListUsers(ctx context.Context) (users []User, err error)
 	FindUserByID(ctx context.Context, id string) (user User, err error)
+	FindUserByEmail(ctx context.Context, email string) (user User, err error)
 	DeleteUserByID(ctx context.Context, id string) (err error)
 	UpdateUser(ctx context.Context, user *User) (err error)
 
