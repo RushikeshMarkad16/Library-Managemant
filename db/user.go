@@ -10,10 +10,13 @@ const (
     id,first_name,last_name,gender,address,email,password,mob_no,role)
     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
-	listUsersQuery      = `SELECT * FROM user`
-	findUserByIDQuery   = `SELECT * FROM user WHERE id = ?`
-	deleteUserByIDQuery = `DELETE FROM user WHERE id = ?`
-	updateUserQuery     = `UPDATE user SET first_name=?, last_name=?, gender=?, address=?, password=?, mob_no=? WHERE id=? `
+	listUsersQuery       = `SELECT * FROM user ORDER BY first_name`
+	findUserByIDQuery    = `SELECT * FROM user WHERE id = ?`
+	setForeignKeyZero    = "SET foreign_key_checks = 0"
+	deleteUserByIDQuery  = `DELETE FROM user WHERE id = ?`
+	setForeignKeyOne     = "SET foreign_key_checks = 1"
+	updateUserQuery      = `UPDATE user SET first_name=?, last_name=?, gender=?, address=?, password=?, mob_no=? WHERE id=? `
+	findUserByEmailQuery = `SELECT * FROM user WHERE email = ?`
 )
 
 type User struct {
@@ -69,13 +72,13 @@ func (s *store) FindUserByID(ctx context.Context, id string) (user User, err err
 
 func (s *store) DeleteUserByID(ctx context.Context, id string) (err error) {
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
-		res, err := s.db.Exec(deleteUserByIDQuery, id)
+		res, err := s.db.Exec(setForeignKeyZero, deleteUserByIDQuery, id, setForeignKeyOne)
 		cnt, err := res.RowsAffected()
 		if cnt == 0 {
 			return ErrUserNotExist
 		}
 		if err != nil {
-			return err
+			return ErrUserTakenBook
 		}
 		return err
 	})
@@ -96,4 +99,14 @@ func (s *store) UpdateUser(ctx context.Context, user *User) (err error) {
 		)
 		return err
 	})
+}
+
+func (s *store) FindUserByEmail(ctx context.Context, email string) (user User, err error) {
+	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
+		return s.db.GetContext(ctx, &user, findUserByEmailQuery, email)
+	})
+	if err == sql.ErrNoRows {
+		return user, ErrUserNotExist
+	}
+	return
 }
