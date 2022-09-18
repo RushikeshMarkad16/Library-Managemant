@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -52,6 +53,33 @@ func GenerateJWT(UserID string, Email string, Role string) (tokenString string, 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err = token.SignedString(jwtKey)
 	return
+}
+
+func Authorize(handler http.HandlerFunc, role string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		//TODO:
+		//1. get token from reuqest header
+		//2. decode token
+		//3. check if user exist from token.ID
+		//4. if role is allowed
+		//5. call handler
+
+		tokenString := r.Header.Get("Authorization")
+
+		claims := jwt.MapClaims{}
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+			return []byte(jwtKey), nil
+		})
+
+		for key, val := range claims {
+			fmt.Printf("Key: %v, value: %v\n", key, val)
+			fmt.Println(key, val)
+		}
+
+		fmt.Println(token, err)
+
+	}
 }
 
 func Create(service Service) http.HandlerFunc {

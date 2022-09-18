@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -16,84 +15,88 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Authentication struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+type JWTClaim struct {
+	Id    string `json:"id"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
+	jwt.StandardClaims
+}
+type TokenData struct {
+	Id    string
+	Email string
+	Role  string
 }
 
-type Token struct {
-	Email       string `json:"email"`
-	Role        string `json:"role"`
-	TokenString string `json:"token"`
-}
+const (
+	SUPERADMIN = iota
+	ADMIN
+	USER
+)
+
+var RoleMap = map[string]int{"superadmin": SUPERADMIN, "admin": ADMIN, "user": USER}
 
 var secretkey = []byte("jsd549$^&")
 
-func GenerateJWT(email, role, id string) (string, error) {
-	var mySigningKey = []byte(secretkey)
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-
-	claims["authorized"] = true
-	claims["email"] = email
-	claims["role"] = role
-	claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
-
-	tokenString, err := token.SignedString(mySigningKey)
-
-	if err != nil {
-		fmt.Errorf("Something Went Wrong: %s", err.Error())
-		return "", err
-	}
-	return tokenString, nil
-}
-
-func IsAuthorized(handler http.HandlerFunc) http.HandlerFunc {
+func Authorize(handler http.HandlerFunc, role int) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		if r.Header["Token"] == nil {
-			err := errors.New("no Token Found")
-			json.NewEncoder(w).Encode(err)
-			return
-		}
+		token := r.Header.Get("Authorization")
 
-		var mySigningKey = []byte(secretkey)
-
-		token, err := jwt.Parse(r.Header["Token"][0], func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("there was an error in parsing")
-			}
-			return mySigningKey, nil
-		})
-
+		isValid, tokenData, err := ValidateToken(token)
+		fmt.Println(isValid)
 		if err != nil {
-			err := errors.New("your Token has been expired")
-			json.NewEncoder(w).Encode(err)
+			fmt.Println("error")
+		}
+
+		fmt.Println("Token Data : ", tokenData)
+
+		if !isValid {
+			//Send error response to api
+			api.Error(w, http.StatusBadRequest, api.Response{Message: "Token is not valid"})
 			return
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			if claims["role"] == "admin" {
-
-				r.Header.Set("Role", "admin")
-				handler.ServeHTTP(w, r)
-				return
-
-			} else if claims["role"] == "user" {
-
-				r.Header.Set("Role", "user")
-				handler.ServeHTTP(w, r)
-				return
-			} else if claims["role"] == "superadmin" {
-
-				r.Header.Set("Role", "superadmin")
-				handler.ServeHTTP(w, r)
-				return
-			}
+		tokenRole := tokenData.Role
+		if RoleMap[tokenRole] > role {
+			api.Error(w, http.StatusBadRequest, api.Response{Message: "You don't have the access"})
+			return
 		}
-		reserr := errors.New("not Authorized")
-		json.NewEncoder(w).Encode(reserr)
+
+		handler.ServeHTTP(w, r)
+		return
 	}
+}
+
+func ValidateToken(tokenString string) (isValid bool, tokenData TokenData, err error) {
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		&JWTClaim{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(secretkey), nil
+		},
+	)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	claims, ok := token.Claims.(*JWTClaim)
+	if !ok {
+		err = errors.New("couldn't parse claims")
+		return
+	}
+	if claims.ExpiresAt < time.Now().Local().Unix() {
+		err = errors.New("token expired")
+		return
+	}
+
+	isValid = true
+
+	tokenData = TokenData{
+		Id:    claims.Id,
+		Email: claims.Email,
+		Role:  claims.Role,
+	}
+	return
 }
 
 func initRouter(dep dependencies) (router *mux.Router) {
@@ -102,24 +105,24 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	router.HandleFunc("/ping", pingHandler).Methods(http.MethodGet)
 
 	//User
-	router.HandleFunc("/login", user.Login()).Methods(http.MethodPost)
-	router.HandleFunc("/users", user.Create(dep.UserService)).Methods(http.MethodPost)
-	router.HandleFunc("/users", user.List(dep.UserService)).Methods(http.MethodGet)
-	router.HandleFunc("/users/{id}", user.FindByID(dep.UserService)).Methods(http.MethodGet)
-	router.HandleFunc("/users/{id}", user.DeleteByID(dep.UserService)).Methods(http.MethodDelete)
-	router.HandleFunc("/users", user.Update(dep.UserService)).Methods(http.MethodPut)
+	router.HandleFunc("/login", user.Login(dep.UserService)).Methods(http.MethodPost)
+	router.HandleFunc("/users", Authorize(user.Create(dep.UserService), ADMIN)).Methods(http.MethodPost)
+	router.HandleFunc("/users", Authorize(user.List(dep.UserService), ADMIN)).Methods(http.MethodGet)
+	router.HandleFunc("/users/{id}", Authorize(user.FindByID(dep.UserService), USER)).Methods(http.MethodGet)
+	router.HandleFunc("/users/{id}", Authorize(user.DeleteByID(dep.UserService), ADMIN)).Methods(http.MethodDelete)
+	router.HandleFunc("/users", Authorize(user.Update(dep.UserService), USER)).Methods(http.MethodPut)
 
 	//Book
-	router.HandleFunc("/books", book.Create(dep.BookService)).Methods(http.MethodPost)
-	router.HandleFunc("/books", book.List(dep.BookService)).Methods(http.MethodGet)
-	router.HandleFunc("/books/{id}", book.FindByID(dep.BookService)).Methods(http.MethodGet)
-	router.HandleFunc("/books/{id}", book.DeleteByID(dep.BookService)).Methods(http.MethodDelete)
-	router.HandleFunc("/books", book.Update(dep.BookService)).Methods(http.MethodPut)
+	router.HandleFunc("/books", Authorize(book.Create(dep.BookService), ADMIN)).Methods(http.MethodPost)
+	router.HandleFunc("/books", Authorize(book.List(dep.BookService), USER)).Methods(http.MethodGet)
+	router.HandleFunc("/books/{id}", Authorize(book.FindByID(dep.BookService), USER)).Methods(http.MethodGet)
+	router.HandleFunc("/books/{id}", Authorize(book.DeleteByID(dep.BookService), ADMIN)).Methods(http.MethodDelete)
+	router.HandleFunc("/books", Authorize(book.Update(dep.BookService), ADMIN)).Methods(http.MethodPut)
 
 	//Transaction
-	router.HandleFunc("/book/issue", transaction.Create(dep.TransactionService)).Methods(http.MethodPost)
-	router.HandleFunc("/book/return", transaction.Update(dep.TransactionService)).Methods(http.MethodPut)
-	router.HandleFunc("/userbook/transaction", transaction.List(dep.TransactionService)).Methods(http.MethodGet)
+	router.HandleFunc("/book/issue", Authorize(transaction.Create(dep.TransactionService), ADMIN)).Methods(http.MethodPost)
+	router.HandleFunc("/book/return", Authorize(transaction.Update(dep.TransactionService), ADMIN)).Methods(http.MethodPut)
+	router.HandleFunc("/userbook/transaction", Authorize(transaction.List(dep.TransactionService), ADMIN)).Methods(http.MethodGet)
 
 	return
 }
