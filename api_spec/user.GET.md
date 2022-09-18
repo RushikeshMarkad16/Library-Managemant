@@ -2,7 +2,7 @@
 Description : This API will display user's information
 
 ### HTTP Request
-`GET/users`
+`GET/user/{id}`
 
 ### URL Parameters
 /users

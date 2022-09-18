@@ -5,7 +5,7 @@ Description : This API will create a new user by the superadmin and admin
 `POST /user`
 
 ### URL Parameters
-/user/create
+/user/
 
 ### Query Parameters
 N/A
@@ -70,6 +70,6 @@ N/A
 ### Forbidden Response when field is empty
 ```
 {
-    "Message": Please enter valid credentials"
+    "Message": Please enter valid data"
 }
 ```

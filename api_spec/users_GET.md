@@ -2,13 +2,13 @@
 Description : This API will display user's information
 
 ### HTTP Request
-`GET/user/{user_id}`
+`GET/user/{id}`
 
 ### URL Parameters
-/users/{user_id}
+/users/{id}
 
 ### Query Parameters
-user_id
+id
 
 
 ### Request Headers
