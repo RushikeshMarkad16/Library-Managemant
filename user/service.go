@@ -2,8 +2,10 @@ package user
 
 import (
 	"context"
+	"time"
 
 	"github.com/RushikeshMarkad16/Library-Managemant/db"
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 
 	"go.uber.org/zap"
@@ -15,11 +17,48 @@ type Service interface {
 	findByID(ctx context.Context, id string) (response findByIDResponse, err error)
 	deleteByID(ctx context.Context, id string) (err error)
 	update(ctx context.Context, req User) (err error)
+	GenerateJWT(ctx context.Context, Email string, Password string) (tokenString string, err error)
 }
 
 type userService struct {
 	store  db.Storer
 	logger *zap.SugaredLogger
+}
+
+type JWTClaim struct {
+	Id    string `json:"id"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
+	jwt.StandardClaims
+}
+
+var jwtKey = []byte("jsd549$^&")
+
+func (cs *userService) GenerateJWT(ctx context.Context, Email string, Password string) (tokenString string, err error) {
+
+	// var cs *userService
+	user, err := cs.store.FindUserByEmail(ctx, Email)
+	if err == db.ErrUserNotExist {
+		cs.logger.Error("No user present", "err", err.Error())
+		return "", errNoUserId
+	}
+	if err != nil {
+		cs.logger.Error("Error finding user", "err", err.Error(), "email", Email)
+		return
+	}
+
+	expirationTime := time.Now().Add(1 * time.Hour)
+	claims := &JWTClaim{
+		Id:    user.ID,
+		Email: user.Email,
+		Role:  user.Role,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err = token.SignedString(jwtKey)
+	return
 }
 
 func (cs *userService) list(ctx context.Context) (response listResponse, err error) {
