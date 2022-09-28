@@ -41,7 +41,7 @@ func Create(service Service) http.HandlerFunc {
 			return
 		}
 
-		err = service.create(req.Context(), createUserRequest)
+		err = service.Create(req.Context(), createUserRequest)
 		if isBadRequest(err) {
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
 			return
@@ -58,7 +58,7 @@ func Create(service Service) http.HandlerFunc {
 
 func List(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		resp, err := service.list(req.Context())
+		resp, err := service.List(req.Context())
 		if err == errNoUsers {
 			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
 			return
@@ -76,7 +76,26 @@ func FindByID(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 
-		resp, err := service.findByID(req.Context(), vars["id"])
+		resp, err := service.FindByID(req.Context(), vars["id"])
+
+		if err == errNoUserId {
+			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
+			return
+		}
+		if err != nil {
+			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
+			return
+		}
+
+		api.Success(rw, http.StatusOK, resp)
+	})
+}
+
+func FilterByData(service Service) http.HandlerFunc {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		vars := mux.Vars(req)
+
+		resp, err := service.FindByID(req.Context(), vars["id"])
 
 		if err == errNoUserId {
 			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
@@ -95,10 +114,10 @@ func DeleteByID(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 
-		err := service.deleteByID(req.Context(), vars["id"])
+		err := service.DeleteByID(req.Context(), vars["id"])
 		if err == errNoUserId {
 			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
-			//api.Error(rw, http.StatusNotFound, api.Response{Message: "Cannot delete user"})
+			return
 		}
 		if err != nil {
 			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
@@ -118,7 +137,7 @@ func Update(service Service) http.HandlerFunc {
 			return
 		}
 
-		err = service.update(req.Context(), c)
+		err = service.Update(req.Context(), c)
 		if isBadRequest(err) {
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
 			return
@@ -133,6 +152,49 @@ func Update(service Service) http.HandlerFunc {
 	})
 }
 
+var v User
+var flag = 0
+
+func UpdatePassword(service Service) http.HandlerFunc {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		var c ChangePassword
+		resp, err := service.List(req.Context())
+
+		if err != nil {
+			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
+			return
+		}
+		err = json.NewDecoder(req.Body).Decode(&c)
+
+		if err != nil {
+			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
+			return
+		}
+
+		for _, v = range resp.Users {
+			if v.ID == c.ID && v.Password == c.Password {
+				flag = 1
+				err = service.UpdatePassword(req.Context(), c)
+				if isBadRequest(err) {
+					api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
+					return
+				}
+
+				if err != nil {
+					api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
+					return
+				}
+
+				api.Success(rw, http.StatusOK, api.Response{Message: "Updated Successfully"})
+			}
+		}
+		if flag != 1 {
+			api.Success(rw, http.StatusOK, api.Response{Message: "Wrong ID or Password"})
+		}
+
+	})
+}
+
 func isBadRequest(err error) bool {
-	return err == errEmptyFirstName || err == errEmptyID
+	return err == errInvalidFirstName || err == errEmptyID || err == errInvalidLastName
 }
