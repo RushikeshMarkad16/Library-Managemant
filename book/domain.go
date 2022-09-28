@@ -16,7 +16,7 @@ type findByIDResponse struct {
 
 type listResponse struct {
 	Books []Book `json:"books"`
-	Count int    `json:"total_count"` //to be updated
+	//Count int    `json:"total_count"` //to be updated
 }
 
 func (cr Book) Validate() (err error) {
