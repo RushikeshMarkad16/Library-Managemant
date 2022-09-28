@@ -109,8 +109,10 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	router.HandleFunc("/users", Authorize(user.Create(dep.UserService), ADMIN)).Methods(http.MethodPost)
 	router.HandleFunc("/users", Authorize(user.List(dep.UserService), ADMIN)).Methods(http.MethodGet)
 	router.HandleFunc("/users/{id}", Authorize(user.FindByID(dep.UserService), USER)).Methods(http.MethodGet)
+	router.HandleFunc("/users/{filterData}", Authorize(user.FilterByData(dep.UserService), ADMIN)).Methods(http.MethodPut)
 	router.HandleFunc("/users/{id}", Authorize(user.DeleteByID(dep.UserService), ADMIN)).Methods(http.MethodDelete)
 	router.HandleFunc("/users", Authorize(user.Update(dep.UserService), USER)).Methods(http.MethodPut)
+	router.HandleFunc("/user/password/reset", Authorize(user.UpdatePassword(dep.UserService), USER)).Methods(http.MethodPut)
 
 	//Book
 	router.HandleFunc("/books", Authorize(book.Create(dep.BookService), ADMIN)).Methods(http.MethodPost)
@@ -123,6 +125,7 @@ func initRouter(dep dependencies) (router *mux.Router) {
 	router.HandleFunc("/book/issue", Authorize(transaction.Create(dep.TransactionService), ADMIN)).Methods(http.MethodPost)
 	router.HandleFunc("/book/return", Authorize(transaction.Update(dep.TransactionService), ADMIN)).Methods(http.MethodPut)
 	router.HandleFunc("/userbook/transaction", Authorize(transaction.List(dep.TransactionService), ADMIN)).Methods(http.MethodGet)
+	router.HandleFunc("/bookstatus", Authorize(transaction.GetBookStatus(dep.TransactionService), USER)).Methods(http.MethodGet)
 
 	return
 }
