@@ -5,7 +5,7 @@ Description : This API will create a new user by the superadmin and admin
 `POST /user`
 
 ### URL Parameters
-/user/
+
 
 ### Query Parameters
 N/A
@@ -14,6 +14,7 @@ N/A
 ### Request Headers
 ```
 Content-Type: application/x-www-form-urlencoded
+Authorization:
 ```
 
 ### Request Body
@@ -24,9 +25,8 @@ Content-Type: application/x-www-form-urlencoded
 | last_name   | String | last_name of new user      |
 | Password   | String | set password for user      |
 | Gender   | String | Gender of user      |
-| DOB   | Date  |   Birthdate of user   |
 | Address   | String    | Adress of the user    |
-| Role   | String | role of user (admin,superadmin,enduser)     |
+| Role_id   | String | role i (admin,superadmin,enduser)     |
 | Mob_no   | longint |Conact Number of user      |
 
 

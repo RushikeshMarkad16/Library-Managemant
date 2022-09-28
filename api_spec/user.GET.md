@@ -5,7 +5,7 @@ Description : This API will display user's information
 `GET/user/{id}`
 
 ### URL Parameters
-/users
+/user/{id}
 
 ### Query Parameters
 N/A

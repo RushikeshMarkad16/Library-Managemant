@@ -2,10 +2,10 @@
 Description : This API will update the user information
 
 ### HTTP Request
-`PUT/user`
+`PUT/users`
 
 ### URL Parameters
-/user/{userid}
+
 
 ### Query Parameters
 N/A
@@ -19,9 +19,9 @@ Content-Type: application/x-www-form-urlencoded
 ### Request Body
 | Parameter | Format | Description                                |
 |-----------|--------|--------------------------------------------|
-| Email     | String | Email Id of user requesting email reset |
-| Password   | String | user password that is to be updated     |
-| field   | String | field that is to be updated    |
+| first_name     | String | first name of user requesting first name reset |
+| last_name   | String | user last name that is to be updated     |
+| id   | String | id of the user    |
 
 
 ### Sample cURL request
@@ -44,7 +44,7 @@ N/A
 ### Success Response Body
 ```
 {
-    "Message": Field Updated Successfully "
+    "Message": Updated Successfully "
 }
 ```
 
