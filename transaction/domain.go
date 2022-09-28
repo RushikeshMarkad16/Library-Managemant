@@ -11,7 +11,12 @@ type Transaction struct {
 
 type listResponse struct {
 	Transactions []Transaction `json:"transactions"`
-	Count        int           `json:"total_count"` //to be updated
+	//Count        int           `json:"total_count"` //to be updated
+}
+
+type RequestStatus struct {
+	UserID string `json:"user_id"`
+	BookID string `json:"book_id"`
 }
 
 func (cr Transaction) Validate() (err error) {

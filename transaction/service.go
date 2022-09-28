@@ -12,6 +12,7 @@ type Service interface {
 	list(ctx context.Context) (response listResponse, err error)
 	create(ctx context.Context, req Transaction) (err error)
 	update(ctx context.Context, req Transaction) (err error)
+	BookStatus(ctx context.Context, c RequestStatus) (response string, err error)
 }
 
 type transactionService struct {
@@ -24,6 +25,11 @@ func (cs *transactionService) create(ctx context.Context, c Transaction) (err er
 	if err != nil {
 		cs.logger.Errorw("Invalid request for transaction create", "msg", err.Error(), "transaction", c)
 		return
+	}
+
+	res, _ := cs.store.BookStatus(ctx, c.BookID, c.UserID)
+	if res == "issued" {
+		return errAlreadyTaken
 	}
 
 	uuidgen := uuid.New()
@@ -91,6 +97,19 @@ func (cs *transactionService) update(ctx context.Context, c Transaction) (err er
 		return
 	}
 
+	return
+}
+
+func (cs *transactionService) BookStatus(ctx context.Context, c RequestStatus) (response string, err error) {
+	response, err = cs.store.BookStatus(ctx, c.BookID, c.UserID)
+	if err == db.ErrUserNotExist {
+		cs.logger.Error("No Transaction present", "err", err.Error())
+		return response, errNoTransactions
+	}
+	if err != nil {
+		cs.logger.Error("Error listing Transactions", "err", err.Error())
+		return
+	}
 	return
 }
 
