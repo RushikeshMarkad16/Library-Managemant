@@ -21,9 +21,11 @@ type Storer interface {
 	CreateUser(ctx context.Context, user *User) (err error)
 	ListUsers(ctx context.Context) (users []User, err error)
 	FindUserByID(ctx context.Context, id string) (user User, err error)
+	FindUserByData(ctx context.Context, filterData string) (user User, err error)
 	FindUserByEmail(ctx context.Context, email string) (user User, err error)
 	DeleteUserByID(ctx context.Context, id string) (err error)
 	UpdateUser(ctx context.Context, user *User) (err error)
+	UpdatePassword(ctx context.Context, user *User) (err error)
 
 	//Book
 	CreateBook(ctx context.Context, book *Book) (err error)
@@ -31,6 +33,7 @@ type Storer interface {
 	FindBookByID(ctx context.Context, id string) (book Book, err error)
 	DeleteBookByID(ctx context.Context, id string) (err error)
 	UpdateBook(ctx context.Context, book *Book) (err error)
+	BookStatus(ctx context.Context, BookId string, UserID string) (res string, err error)
 
 	//Transaction
 	CreateTransaction(ctx context.Context, transaction *Transaction) (err error)

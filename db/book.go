@@ -10,10 +10,11 @@ const (
     id,name,author,price,total_copies,status,available_copies)
     VALUES(?, ?, ?, ?, ?, ?, ?)`
 
-	listBooksQuery      = `SELECT * FROM book`
+	listBooksQuery      = `SELECT * FROM book ORDER BY name`
 	findBookByIDQuery   = `SELECT * FROM book WHERE id = ?`
 	deleteBookByIDQuery = `DELETE FROM book WHERE id = ?`
 	updateBookQuery     = `UPDATE book SET name=?, author=?, price=?, total_copies=?, status=?, available_copies=? WHERE id=? `
+	BookIDExist         = `SELECT COUNT(*) FROM book WHERE book.id = ?`
 )
 
 type Book struct {
@@ -79,18 +80,25 @@ func (s *store) DeleteBookByID(ctx context.Context, id string) (err error) {
 
 func (s *store) UpdateBook(ctx context.Context, book *Book) (err error) {
 	//now := time.Now()
+	flag := 0
 
-	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
-		_, err = s.db.Exec(
-			updateBookQuery,
-			book.Name,
-			book.Author,
-			book.Price,
-			book.TotalCopies,
-			book.Status,
-			book.AvailableCopies,
-			book.ID,
-		)
-		return err
-	})
+	s.db.GetContext(ctx, &flag, BookIDExist, book.ID)
+
+	if flag == 0 {
+		return ErrIDNotExist
+	} else {
+		return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
+			_, err = s.db.Exec(
+				updateBookQuery,
+				book.Name,
+				book.Author,
+				book.Price,
+				book.TotalCopies,
+				book.Status,
+				book.AvailableCopies,
+				book.ID,
+			)
+			return err
+		})
+	}
 }

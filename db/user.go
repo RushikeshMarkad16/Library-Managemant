@@ -12,23 +12,25 @@ const (
 
 	listUsersQuery       = `SELECT * FROM user ORDER BY first_name`
 	findUserByIDQuery    = `SELECT * FROM user WHERE id = ?`
-	setForeignKeyZero    = "SET foreign_key_checks = 0"
 	deleteUserByIDQuery  = `DELETE FROM user WHERE id = ?`
-	setForeignKeyOne     = "SET foreign_key_checks = 1"
-	updateUserQuery      = `UPDATE user SET first_name=?, last_name=?, gender=?, address=?, password=?, mob_no=? WHERE id=? `
+	updateUserQuery      = `UPDATE user SET first_name=?, last_name=? WHERE id=? `
+	IDExistQuery         = `SELECT COUNT(*) FROM user WHERE user.id = ?`
+	updatePasswordQuery  = `UPDATE user SET password=? where id=?`
 	findUserByEmailQuery = `SELECT * FROM user WHERE email = ?`
+	filterUserByData     = `SELECT * FROM user WHERE first_name LIKE ?% `
 )
 
 type User struct {
-	ID         string `db:"id"`
-	First_name string `db:"first_name"`
-	Last_name  string `db:"last_name"`
-	Gender     string `db:"gender"`
-	Address    string `db:"address"`
-	Email      string `db:"email"`
-	Password   string `db:"password"`
-	Mob_no     string `db:"mob_no"`
-	Role       string `db:"role"`
+	ID          string `db:"id"`
+	First_name  string `db:"first_name"`
+	Last_name   string `db:"last_name"`
+	Gender      string `db:"gender"`
+	Address     string `db:"address"`
+	Email       string `db:"email"`
+	Password    string `db:"password"`
+	Mob_no      string `db:"mob_no"`
+	Role        string `db:"role"`
+	NewPassword string `db:"password"`
 }
 
 func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
@@ -70,31 +72,57 @@ func (s *store) FindUserByID(ctx context.Context, id string) (user User, err err
 	return
 }
 
+func (s *store) FindUserByData(ctx context.Context, filterData string) (user User, err error) {
+	err = WithDefaultTimeout(ctx, func(ctx context.Context) error {
+		return s.db.GetContext(ctx, &user, filterUserByData, filterData)
+	})
+	if err == sql.ErrNoRows {
+		return user, ErrUserNotExist
+	}
+	return
+}
+
 func (s *store) DeleteUserByID(ctx context.Context, id string) (err error) {
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
-		res, err := s.db.Exec(setForeignKeyZero, deleteUserByIDQuery, id, setForeignKeyOne)
+		//res, err := s.db.Exec(setForeignKeyZero, deleteUserByIDQuery, id, setForeignKeyOne)
+		res, err := s.db.Exec(deleteUserByIDQuery, id)
 		cnt, err := res.RowsAffected()
 		if cnt == 0 {
 			return ErrUserNotExist
 		}
 		if err != nil {
-			return ErrUserTakenBook
+			return err
 		}
 		return err
 	})
 }
 
 func (s *store) UpdateUser(ctx context.Context, user *User) (err error) {
+	flag := 0
+
+	s.db.GetContext(ctx, &flag, IDExistQuery, user.ID)
+
+	if flag == 0 {
+		return ErrIDNotExist
+	} else {
+		return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
+			_, err = s.db.Exec(
+				updateUserQuery,
+				user.First_name,
+				user.Last_name,
+				user.ID,
+			)
+			return err
+		})
+	}
+}
+
+func (s *store) UpdatePassword(ctx context.Context, user *User) (err error) {
 
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		_, err = s.db.Exec(
-			updateUserQuery,
-			user.First_name,
-			user.Last_name,
-			user.Gender,
-			user.Address,
+			updatePasswordQuery,
 			user.Password,
-			user.Mob_no,
 			user.ID,
 		)
 		return err
