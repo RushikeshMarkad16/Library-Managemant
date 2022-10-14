@@ -24,16 +24,22 @@ const (
 
 type Transaction struct {
 	ID         string `db:"id"`
-	IssueDate  int    `db:"issue_date"`
-	DueDate    int    `db:"due_date"`
-	ReturnDate int    `db:"return_date"`
+	IssueDate  string `db:"issue_date"`
+	DueDate    string `db:"due_date"`
+	ReturnDate string `db:"return_date"`
 	BookID     string `db:"book_id"`
 	UserID     string `db:"user_id"`
 }
 
 func (s *store) CreateTransaction(ctx context.Context, transaction *Transaction) (err error) {
+	// now := time.Now().UTC().Unix()
+	// transaction.DueDate = int(now) + 864000
 	now := time.Now().UTC().Unix()
-	transaction.DueDate = int(now) + 864000
+	t := time.Unix(now, 0)
+	strnow := t.Format(time.UnixDate)
+	transactionduedate := int(now) + 864000
+	t = time.Unix(int64(transactionduedate), 0)
+	strduedate := t.Format(time.UnixDate)
 
 	count := -1
 	s.db.GetContext(ctx, &count, UserIdPresentQuery, transaction.UserID)
@@ -50,8 +56,8 @@ func (s *store) CreateTransaction(ctx context.Context, transaction *Transaction)
 		_, err = s.db.Exec(
 			createTransactionQuery,
 			transaction.ID,
-			now,
-			transaction.DueDate,
+			strnow,
+			strduedate,
 			0,
 			transaction.BookID,
 			transaction.UserID,
@@ -80,7 +86,10 @@ func (s *store) ListTransactions(ctx context.Context) (transactions []Transactio
 }
 
 func (s *store) UpdateTransaction(ctx context.Context, transaction *Transaction) (err error) {
+	// now := time.Now().UTC().Unix()
 	now := time.Now().UTC().Unix()
+	t := time.Unix(now, 0)
+	strnow := t.Format(time.UnixDate)
 	count := -1
 	s.db.GetContext(ctx, &count, UserIdPresentQuery, transaction.UserID)
 	if count < 1 {
@@ -96,7 +105,7 @@ func (s *store) UpdateTransaction(ctx context.Context, transaction *Transaction)
 		return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 			_, err = s.db.Exec(
 				updateTransactionQuery,
-				now,
+				strnow,
 				transaction.BookID,
 				transaction.UserID,
 			)
