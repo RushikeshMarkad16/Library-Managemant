@@ -48,9 +48,9 @@ func (cs *userService) GenerateJWT(ctx context.Context, Email string, Password s
 		cs.logger.Error("Error finding user", "err", err.Error(), "email", Email)
 		return
 	}
-	if Password != user.Password {
-		return "", errWrongPassword
 
+	if !CheckPasswordHash(Password, user.Password) {
+		return "", errWrongPassword
 	}
 
 	expirationTime := time.Now().Add(1 * time.Hour)
@@ -146,11 +146,6 @@ func (cs *userService) Update(ctx context.Context, c User) (err error) {
 }
 
 func (cs *userService) UpdatePassword(ctx context.Context, c ChangePassword) (err error) {
-	// err = c.Validate()
-	// if err != nil {
-	// 	cs.logger.Error("Invalid Request for Password update", "err", err.Error(), "user", c)
-	// 	return
-	// }
 
 	err = cs.store.UpdatePassword(ctx, &db.User{
 		ID:       c.ID,
