@@ -28,7 +28,8 @@ type Book struct {
 }
 
 func (s *store) CreateBook(ctx context.Context, book *Book) (err error) {
-
+	book.AvailableCopies = book.TotalCopies
+	book.Status = "Available"
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		_, err = s.db.Exec(
 			createBookQuery,
@@ -79,7 +80,6 @@ func (s *store) DeleteBookByID(ctx context.Context, id string) (err error) {
 }
 
 func (s *store) UpdateBook(ctx context.Context, book *Book) (err error) {
-	//now := time.Now()
 	flag := 0
 
 	s.db.GetContext(ctx, &flag, BookIDExist, book.ID)
