@@ -14,6 +14,17 @@ type User struct {
 	Role      string `json:"role"`
 }
 
+type UserToDisplay struct {
+	ID        string `json:"id"`
+	FirstName string `json:"first_name"`
+	Last_name string `json:"last_name"`
+	Gender    string `json:"gender"`
+	Address   string `json:"address"`
+	Email     string `json:"email"`
+	Mob_no    string `json:"mob_no"`
+	Role      string `json:"role"`
+}
+
 type ChangePassword struct {
 	ID          string `json:"id"`
 	Password    string `json:"password"`
@@ -35,7 +46,7 @@ type ListResponse struct {
 
 func (cr User) Validate() (err error) {
 	if cr.FirstName == "" {
-		return errInvalidFirstName
+		return errEmptyFirstName
 	}
 	for _, r := range cr.FirstName {
 		if !unicode.IsLetter(r) {
@@ -43,7 +54,7 @@ func (cr User) Validate() (err error) {
 		}
 	}
 	if cr.Last_name == "" {
-		return errInvalidLastName
+		return errEmptyLastName
 	}
 	for _, r := range cr.Last_name {
 		if !unicode.IsLetter(r) {
