@@ -3,6 +3,9 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -10,8 +13,8 @@ const (
     id,first_name,last_name,gender,address,email,password,mob_no,role)
     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
-	listUsersQuery       = `SELECT * FROM user ORDER BY first_name`
-	findUserByIDQuery    = `SELECT * FROM user WHERE id = ?`
+	listUsersQuery       = `SELECT id,first_name,last_name,gender,address,email,mob_no,role FROM user ORDER BY first_name`
+	findUserByIDQuery    = `SELECT id,first_name,last_name,gender,address,email,mob_no,role FROM user WHERE id = ?`
 	deleteUserByIDQuery  = `DELETE FROM user WHERE id = ?`
 	updateUserQuery      = `UPDATE user SET first_name=?, last_name=? WHERE id=? `
 	IDExistQuery         = `SELECT COUNT(*) FROM user WHERE user.id = ?`
@@ -44,12 +47,18 @@ func (s *store) CreateUser(ctx context.Context, user *User) (err error) {
 			user.Gender,
 			user.Address,
 			user.Email,
-			user.Password,
+			HashPassword(user.Password),
 			user.Mob_no,
 			user.Role,
 		)
 		return err
 	})
+}
+
+func HashPassword(password string) string {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+	fmt.Println(err)
+	return string(bytes)
 }
 
 func (s *store) ListUsers(ctx context.Context) (users []User, err error) {
@@ -122,7 +131,7 @@ func (s *store) UpdatePassword(ctx context.Context, user *User) (err error) {
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
 		_, err = s.db.Exec(
 			updatePasswordQuery,
-			user.Password,
+			HashPassword(user.Password),
 			user.ID,
 		)
 		return err
