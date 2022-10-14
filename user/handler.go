@@ -2,10 +2,12 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/RushikeshMarkad16/Library-Managemant/api"
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Authentication struct {
@@ -68,7 +70,21 @@ func List(service Service) http.HandlerFunc {
 			return
 		}
 
-		api.Success(rw, http.StatusOK, resp)
+		var temp []UserToDisplay
+		for _, j := range resp.Users {
+			var temp1 UserToDisplay
+			temp1.ID = j.ID
+			temp1.FirstName = j.FirstName
+			temp1.Last_name = j.Last_name
+			temp1.Gender = j.Gender
+			temp1.Address = j.Address
+			temp1.Email = j.Email
+			temp1.Mob_no = j.Mob_no
+			temp1.Role = j.Role
+			temp = append(temp, temp1)
+		}
+
+		api.Success(rw, http.StatusOK, temp)
 	})
 }
 
@@ -155,6 +171,12 @@ func Update(service Service) http.HandlerFunc {
 var v User
 var flag = 0
 
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	fmt.Println(err)
+	return err == nil
+}
+
 func UpdatePassword(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		var c ChangePassword
@@ -172,7 +194,7 @@ func UpdatePassword(service Service) http.HandlerFunc {
 		}
 
 		for _, v = range resp.Users {
-			if v.ID == c.ID && v.Password == c.Password {
+			if v.ID == c.ID && CheckPasswordHash(c.Password, v.Password) {
 				flag = 1
 				err = service.UpdatePassword(req.Context(), c)
 				if isBadRequest(err) {
