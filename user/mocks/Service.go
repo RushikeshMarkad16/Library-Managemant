@@ -140,6 +140,20 @@ func (_m *Service) Update(ctx context.Context, req user.User) error {
 	return r0
 }
 
+// UpdatePassword provides a mock function with given fields: ctx, req
+func (_m *Service) UpdatePassword(ctx context.Context, req user.ChangePassword) error {
+	ret := _m.Called(ctx, req)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, user.ChangePassword) error); ok {
+		r0 = rf(ctx, req)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 type mockConstructorTestingTNewService interface {
 	mock.TestingT
 	Cleanup(func())
