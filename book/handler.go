@@ -43,8 +43,16 @@ func List(service Service) http.HandlerFunc {
 			api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
 			return
 		}
-
-		api.Success(rw, http.StatusOK, resp)
+		var temp []BookToDisplay
+		for _, j := range resp.Books {
+			var temp1 BookToDisplay
+			temp1.Author = j.Author
+			temp1.ID = j.ID
+			temp1.Name = j.Name
+			temp1.Status = j.Status
+			temp = append(temp, temp1)
+		}
+		api.Success(rw, http.StatusOK, temp)
 	})
 }
 
