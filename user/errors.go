@@ -10,6 +10,7 @@ var (
 	errInvalidLastName  = errors.New("Invalid Last name")
 	errNoUsers          = errors.New("No users present")
 	errNoUserId         = errors.New("User is not present")
+	errWrongEmail       = errors.New("Invalid username/password")
 	errWrongPassword    = errors.New("Invalid username/password")
 	errEmptyPassword    = errors.New("Password cannot be empty")
 	errInvalidPassword  = errors.New("Password length must be 6 or more")
