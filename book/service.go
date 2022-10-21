@@ -11,11 +11,11 @@ import (
 )
 
 type Service interface {
-	list(ctx context.Context) (response listResponse, err error)
-	create(ctx context.Context, req Book) (err error)
-	findByID(ctx context.Context, id string) (response findByIDResponse, err error)
-	deleteByID(ctx context.Context, id string) (err error)
-	update(ctx context.Context, req Book) (err error)
+	List(ctx context.Context) (response ListResponse, err error)
+	Create(ctx context.Context, req Book) (err error)
+	FindByID(ctx context.Context, id string) (response FindByIDResponse, err error)
+	DeleteByID(ctx context.Context, id string) (err error)
+	Update(ctx context.Context, req Book) (err error)
 }
 
 type bookService struct {
@@ -23,7 +23,7 @@ type bookService struct {
 	logger *zap.SugaredLogger
 }
 
-func (cs *bookService) list(ctx context.Context) (response listResponse, err error) {
+func (cs *bookService) List(ctx context.Context) (response ListResponse, err error) {
 	dbBooks, err := cs.store.ListBooks(ctx)
 	if err == db.ErrBookNotExist {
 		cs.logger.Error("No book present", "err", err.Error())
@@ -50,7 +50,7 @@ func (cs *bookService) list(ctx context.Context) (response listResponse, err err
 	return
 }
 
-func (cs *bookService) create(ctx context.Context, c Book) (err error) {
+func (cs *bookService) Create(ctx context.Context, c Book) (err error) {
 	err = c.Validate()
 	if err != nil {
 		cs.logger.Errorw("Invalid request for book create", "msg", err.Error(), "book", c)
@@ -75,7 +75,7 @@ func (cs *bookService) create(ctx context.Context, c Book) (err error) {
 	return
 }
 
-func (cs *bookService) update(ctx context.Context, c Book) (err error) {
+func (cs *bookService) Update(ctx context.Context, c Book) (err error) {
 	err = c.Validate()
 	if err != nil {
 		cs.logger.Error("Invalid Request for book update", "err", err.Error(), "book", c)
@@ -99,7 +99,7 @@ func (cs *bookService) update(ctx context.Context, c Book) (err error) {
 	return
 }
 
-func (cs *bookService) findByID(ctx context.Context, id string) (response findByIDResponse, err error) {
+func (cs *bookService) FindByID(ctx context.Context, id string) (response FindByIDResponse, err error) {
 	book, err := cs.store.FindBookByID(ctx, id)
 	if err == db.ErrBookNotExist {
 		cs.logger.Error("No book present", "err", err.Error())
@@ -121,7 +121,7 @@ func (cs *bookService) findByID(ctx context.Context, id string) (response findBy
 	return
 }
 
-func (cs *bookService) deleteByID(ctx context.Context, id string) (err error) {
+func (cs *bookService) DeleteByID(ctx context.Context, id string) (err error) {
 	err = cs.store.DeleteBookByID(ctx, id)
 	if err == db.ErrBookNotExist {
 		cs.logger.Error("Book Not present", "err", err.Error(), "id", id)
