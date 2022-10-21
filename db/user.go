@@ -13,7 +13,7 @@ const (
     id,first_name,last_name,gender,address,email,password,mob_no,role)
     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
-	listUsersQuery       = `SELECT id,first_name,last_name,gender,address,email,mob_no,role FROM user ORDER BY first_name`
+	listUsersQuery       = `SELECT id,first_name,last_name,gender,address,email,password,mob_no,role FROM user ORDER BY first_name`
 	findUserByIDQuery    = `SELECT id,first_name,last_name,gender,address,email,mob_no,role FROM user WHERE id = ?`
 	deleteUserByIDQuery  = `DELETE FROM user WHERE id = ?`
 	updateUserQuery      = `UPDATE user SET first_name=?, last_name=? WHERE id=? `
@@ -93,7 +93,6 @@ func (s *store) FindUserByData(ctx context.Context, filterData string) (user Use
 
 func (s *store) DeleteUserByID(ctx context.Context, id string) (err error) {
 	return Transact(ctx, s.db, &sql.TxOptions{}, func(ctx context.Context) error {
-		//res, err := s.db.Exec(setForeignKeyZero, deleteUserByIDQuery, id, setForeignKeyOne)
 		res, err := s.db.Exec(deleteUserByIDQuery, id)
 		cnt, err := res.RowsAffected()
 		if cnt == 0 {
