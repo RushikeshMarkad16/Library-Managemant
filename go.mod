@@ -3,6 +3,7 @@ module github.com/RushikeshMarkad16/Library-Managemant
 go 1.18
 
 require (
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.3.0
@@ -16,6 +17,7 @@ require (
 	github.com/urfave/cli v1.22.10
 	github.com/urfave/negroni v1.0.0
 	go.uber.org/zap v1.23.0
+	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
 )
 
 require (

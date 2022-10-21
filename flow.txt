@@ -1,0 +1,10 @@
+main.go
+  config folder
+  api folder
+  db folder
+  password : Name@123
+  
+
+  Todo
+  display user by id struct
+  invalid total copies
