@@ -17,7 +17,7 @@ func Create(service Service) http.HandlerFunc {
 			return
 		}
 
-		err = service.create(req.Context(), createBookRequest)
+		err = service.Create(req.Context(), createBookRequest)
 		if isBadRequest(err) {
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
 			return
@@ -28,13 +28,13 @@ func Create(service Service) http.HandlerFunc {
 			return
 		}
 
-		api.Success(rw, http.StatusCreated, api.Response{Message: "Created Successfully"})
+		api.Success(rw, http.StatusCreated, api.Response{Message: "Added Book Successfully"})
 	})
 }
 
 func List(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		resp, err := service.list(req.Context())
+		resp, err := service.List(req.Context())
 		if err == errNoBooks {
 			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
 			return
@@ -60,7 +60,7 @@ func FindByID(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 
-		resp, err := service.findByID(req.Context(), vars["id"])
+		resp, err := service.FindByID(req.Context(), vars["id"])
 
 		if err == errNoBookId {
 			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
@@ -79,7 +79,7 @@ func DeleteByID(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 
-		err := service.deleteByID(req.Context(), vars["id"])
+		err := service.DeleteByID(req.Context(), vars["id"])
 		if err == errNoBookId {
 			api.Error(rw, http.StatusNotFound, api.Response{Message: err.Error()})
 			return
@@ -89,7 +89,7 @@ func DeleteByID(service Service) http.HandlerFunc {
 			return
 		}
 
-		api.Success(rw, http.StatusOK, api.Response{Message: "Deleted Successfully"})
+		api.Success(rw, http.StatusOK, api.Response{Message: "Book Deleted Successfully"})
 	})
 }
 
@@ -102,7 +102,7 @@ func Update(service Service) http.HandlerFunc {
 			return
 		}
 
-		err = service.update(req.Context(), c)
+		err = service.Update(req.Context(), c)
 		if isBadRequest(err) {
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
 			return
@@ -113,7 +113,7 @@ func Update(service Service) http.HandlerFunc {
 			return
 		}
 
-		api.Success(rw, http.StatusOK, api.Response{Message: "Updated Successfully"})
+		api.Success(rw, http.StatusOK, api.Response{Message: "Book details updated Successfully"})
 	})
 }
 
