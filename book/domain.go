@@ -23,13 +23,12 @@ type BookToDisplay struct {
 	Status string `json:"status"`
 }
 
-type findByIDResponse struct {
+type FindByIDResponse struct {
 	Book Book `json:"book"`
 }
 
-type listResponse struct {
+type ListResponse struct {
 	Books []Book `json:"books"`
-	//Count int    `json:"total_count"` //to be updated
 }
 
 func (cr Book) Validate() (err error) {
@@ -43,9 +42,7 @@ func (cr Book) Validate() (err error) {
 	if cr.TotalCopies == 0 {
 		return errZeroCopies
 	}
-	// if !unicode.IsNumber(rune(cr.TotalCopies)) {
-	// 	return errInvalidTotalCopies
-	// }
+
 	t := strconv.Itoa(cr.TotalCopies)
 	if !valid.IsInt(t) {
 		return errInvalidTotalCopies
@@ -57,9 +54,6 @@ func (cr Book) Validate() (err error) {
 	if !valid.IsInt(t2) {
 		return errInvalidPrice
 	}
-	// if !unicode.IsNumber(rune(cr.Price)) {
-	// 	return errInvalidPrice
-	// }
 
 	if cr.Status != "available" {
 		return errInvalidStatus
@@ -71,8 +65,6 @@ func (cr Book) Validate() (err error) {
 	if !valid.IsInt(t1) {
 		return err1InvalidAvailableCopies
 	}
-	// if !unicode.IsNumber(rune(cr.AvailableCopies)) {
-	// 	return err1InvalidAvailableCopies
-	// }
+
 	return
 }
