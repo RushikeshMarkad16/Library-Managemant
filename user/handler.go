@@ -54,7 +54,7 @@ func Create(service Service) http.HandlerFunc {
 			return
 		}
 
-		api.Success(rw, http.StatusCreated, api.Response{Message: "Created Successfully"})
+		api.Success(rw, http.StatusCreated, api.Response{Message: "Added user Successfully"})
 	})
 }
 
@@ -140,7 +140,7 @@ func DeleteByID(service Service) http.HandlerFunc {
 			return
 		}
 
-		api.Success(rw, http.StatusOK, api.Response{Message: "Deleted Successfully"})
+		api.Success(rw, http.StatusOK, api.Response{Message: "User Deleted Successfully"})
 	})
 }
 
@@ -164,12 +164,13 @@ func Update(service Service) http.HandlerFunc {
 			return
 		}
 
-		api.Success(rw, http.StatusOK, api.Response{Message: "Updated Successfully"})
+		api.Success(rw, http.StatusOK, api.Response{Message: "User details Updated Successfully"})
 	})
 }
 
 var v User
-var flag = 0
+
+//var flag = 0
 
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
@@ -181,7 +182,7 @@ func UpdatePassword(service Service) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		var c ChangePassword
 		resp, err := service.List(req.Context())
-
+		var flag = 0
 		if err != nil {
 			api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
 			return
@@ -194,24 +195,29 @@ func UpdatePassword(service Service) http.HandlerFunc {
 		}
 
 		for _, v = range resp.Users {
-			if v.ID == c.ID && CheckPasswordHash(c.Password, v.Password) {
-				flag = 1
-				err = service.UpdatePassword(req.Context(), c)
-				if isBadRequest(err) {
-					api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
+			if v.ID == c.ID {
+				if CheckPasswordHash(c.Password, v.Password) {
+					flag = 1
+					err = service.UpdatePassword(req.Context(), c)
+					if isBadRequest(err) {
+						api.Error(rw, http.StatusBadRequest, api.Response{Message: err.Error()})
+						return
+					}
+
+					if err != nil {
+						api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
+						return
+					}
+
+					api.Success(rw, http.StatusOK, api.Response{Message: "Password Updated Successfully"})
 					return
 				}
-
-				if err != nil {
-					api.Error(rw, http.StatusInternalServerError, api.Response{Message: err.Error()})
-					return
-				}
-
-				api.Success(rw, http.StatusOK, api.Response{Message: "Updated Successfully"})
+			} else {
+				flag = 0
 			}
 		}
-		if flag != 1 {
-			api.Success(rw, http.StatusOK, api.Response{Message: "Wrong ID or Password"})
+		if flag == 0 {
+			api.Success(rw, http.StatusOK, api.Response{Message: "Invalid ID or Password"})
 		}
 
 	})
