@@ -28,7 +28,7 @@ func Create(service Service) http.HandlerFunc {
 			return
 		}
 
-		api.Success(rw, http.StatusCreated, api.Response{Message: "Created Successfully"})
+		api.Success(rw, http.StatusCreated, api.Response{Message: "Created transaction Successfully"})
 	})
 }
 
@@ -68,7 +68,7 @@ func Update(service Service) http.HandlerFunc {
 			return
 		}
 
-		api.Success(rw, http.StatusOK, api.Response{Message: "Updated Successfully"})
+		api.Success(rw, http.StatusOK, api.Response{Message: "Book returned Successfully"})
 	})
 }
 
