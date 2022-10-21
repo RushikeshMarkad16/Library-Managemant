@@ -42,7 +42,7 @@ func (cs *userService) GenerateJWT(ctx context.Context, Email string, Password s
 	user, err := cs.store.FindUserByEmail(ctx, Email)
 	if err == db.ErrUserNotExist {
 		cs.logger.Error("No user present", "err", err.Error())
-		return "", errNoUserId
+		return "", errWrongEmail
 	}
 	if err != nil {
 		cs.logger.Error("Error finding user", "err", err.Error(), "email", Email)
